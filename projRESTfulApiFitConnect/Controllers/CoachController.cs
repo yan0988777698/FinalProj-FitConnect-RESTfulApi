@@ -35,7 +35,7 @@ namespace projRESTfulApiFitConnect.Controllers
                 return NotFound();
             }
             var coaches = await _context.TIdentities
-                                .Where(x => x.RoleId == 2 && x.Id == 4)
+                                .Where(x => x.RoleId == 2)
                                 .Include(x => x.Role)
                                 .Include(x => x.Gender)
                                 .ToListAsync();
