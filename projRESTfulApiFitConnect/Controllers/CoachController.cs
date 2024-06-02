@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using projRESTfulApiFitConnect.DTO;
 using projRESTfulApiFitConnect.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace projRESTfulApiFitConnect.Controllers
 {
@@ -83,40 +84,123 @@ namespace projRESTfulApiFitConnect.Controllers
         // GET: api/Coach/5
         //取得特定教練資料
         [HttpGet("{id}")]
-        public async Task<ActionResult<IEnumerable<TmemberRateClass>>> GetCoach(int id)
+        public async Task<ActionResult> GetCoach(int id)
         {
-            if (_context.TIdentities.Find(id) == null)
+            string base64Image = "";
+            List<RateDetailDto> rateDetailDtos = new List<RateDetailDto>();
+            List<FieldDetailDto> fieldDetailDtos = new List<FieldDetailDto>();
+            List<ScheduleDatailDto> scheduleDatailDtos = new List<ScheduleDatailDto>();
+            List<ExpertiseDto> expertiseDtos = new List<ExpertiseDto>();
+
+            var coach = await _context.TIdentities.Where(x => x.RoleId == 2 && x.Id == id).Include(x => x.Gender).Include(x => x.Role).Include(x => x.TcoachInfoIds).FirstOrDefaultAsync();
+            if (coach == null)
             {
-                return Ok(new { status = "fail", message = $"編號{id}的教練不存在於資料庫" });
+                return NotFound();
             }
-            var rates = await _context.TmemberRateClasses
-                        .Where(x => x.CoachId == id)
-                        .ToListAsync();
-            if (rates.Count == 0)
+            var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
+            var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
+            var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x=>x.CourseTime).Include(x=>x.ClassStatus).ToListAsync();
+            var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
+            if (!string.IsNullOrEmpty(coach.Photo))
             {
-                return Ok(new { status = "fail", message = $"編號{id}的教練尚無評價" });
+                string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", coach.Photo);
+                byte[] bytes = System.IO.File.ReadAllBytes(path);
+                base64Image = Convert.ToBase64String(bytes);
             }
-            return Ok(rates);
+            foreach (var expert in experts)
+            {
+                ExpertiseDto expertiseDto= new ExpertiseDto()
+                {
+                    ClassName = expert.Class.ClassName,
+                };
+                expertiseDtos.Add(expertiseDto);
+            }
+            CoachDetailDto coachDetailDto = new CoachDetailDto()
+            {
+                Id = coach.Id,
+                Name = coach.Name,
+                Phone = coach.Phone,
+                EMail = coach.EMail,
+                Photo = base64Image,
+                Birthday = coach.Birthday,
+                Address = coach.Address,
+                Intro = coachInfo.CoachIntro,
+                Experties = expertiseDtos,
+                RoleDescription = coach.Role.RoleDescribe,
+                GenderDescription = coach.Gender.GenderText
+            };
+            foreach (var rate in rates)
+            {
+                RateDetailDto rateDetailDto = new RateDetailDto()
+                {
+                    ReserveId = rate.ReserveId,
+                    Member = rate.Reserve.Member.Name,
+                    Class = rate.Reserve.ClassSchedule.Class.ClassName,
+                    RateClass = rate.RateClass,
+                    ClassDescribe = rate.ClassDescribe,
+                    RateCoach = rate.RateCoach,
+                    CoachDescribe = rate.CoachDescribe
+                };
+                rateDetailDtos.Add(rateDetailDto);
+            }
+            foreach (var field in fields)
+            {
+                FieldDetailDto fieldDetailDto = new FieldDetailDto()
+                {
+                    FieldReserveId = field.FieldReserveId,
+                    City = field.Field.Gym.Region.City.City,
+                    Region = field.Field.Gym.Region.Region,
+                    Gym = field.Field.Gym.Name,
+                    Field = field.Field.FieldName,
+                    PaymentStatus = field.PaymentStatus,
+                    ReserveStatus = field.ReserveStatus
+                };
+                fieldDetailDtos.Add(fieldDetailDto);
+            }
+            foreach (var schedule in schedules)
+            {
+                ScheduleDatailDto scheduleDatailDto = new ScheduleDatailDto()
+                {
+                    ClassScheduleId = schedule.ClassScheduleId,
+                    Class = schedule.Class.ClassName,
+                    Coach = schedule.Coach.Name,
+                    Field = schedule.Field.FieldName,
+                    CourseDate = schedule.CourseDate,
+                    CourseTime = schedule.CourseTime.TimeName,
+                    MaxStudent = schedule.MaxStudent,
+                    ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
+                    ClassPayment = schedule.ClassPayment,
+                    CoachPayment = schedule.CoachPayment
+                };
+                scheduleDatailDtos.Add(scheduleDatailDto);
+            }
+
+
+            var result = new
+            {
+                coachDetailDto,
+                rateDetailDtos,
+                scheduleDatailDtos,
+                fieldDetailDtos
+            };
+            return Ok(result);
         }
 
         // PUT: api/Coach/5
         //修改教練資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCoach(int id, PutCoachDto putCoachDto)
+        public async Task<IActionResult> PutCoach(PutCoachDto putCoachDto, IFormFile img)
         {
-            if (id != putCoachDto.Id)
-            {
-                return BadRequest();
-            }
-            var coach = await _context.TIdentities.FindAsync(id);
+            var coach = await _context.TIdentities.FindAsync(putCoachDto.Id);
             coach.Name = putCoachDto.Name;
             coach.Phone = putCoachDto.Phone;
             coach.Password = putCoachDto.Password;
             coach.EMail = putCoachDto.EMail;
-            if (putCoachDto.Photo != null)
+            if (img != null)
             {
-                coach.Photo = putCoachDto.Photo.FileName;
+                coach.Photo = img.FileName;
             }
             coach.Birthday = putCoachDto.Birthday;
             coach.Address = putCoachDto.Address;
@@ -130,7 +214,7 @@ namespace projRESTfulApiFitConnect.Controllers
         //新增教練資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<PutCoachDto>> PostCoach(PutCoachDto putCoachDto)
+        public async Task<ActionResult<PutCoachDto>> PostCoach([FromForm] PutCoachDto putCoachDto)
         {
             TIdentity identity = new TIdentity();
             identity.Name = putCoachDto.Name;
@@ -140,6 +224,11 @@ namespace projRESTfulApiFitConnect.Controllers
             if (putCoachDto.Photo != null)
             {
                 identity.Photo = putCoachDto.Photo.FileName;
+                string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", putCoachDto.Photo.FileName);
+                using (FileStream fileStream = new FileStream(path, FileMode.Create))
+                {
+                    putCoachDto.Photo.CopyTo(fileStream);
+                }
             }
             identity.Birthday = putCoachDto.Birthday;
             identity.Address = putCoachDto.Address;
@@ -148,7 +237,7 @@ namespace projRESTfulApiFitConnect.Controllers
             _context.TIdentities.Add(identity);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCoach", new { id = putCoachDto.Id }, putCoachDto);
+            return CreatedAtAction("GetCoach", new { id = identity.Id }, putCoachDto);
         }
 
         // DELETE: api/TIdentities/5

@@ -15,8 +15,7 @@ namespace projRESTfulApiFitConnect.DTO
         public string? EMail { get; set; }
 
         public string Password { get; set; } = null!;
-
-        public IFormFile? Photo { get; set; }
+        public IFormFile Photo { get; set; }
 
         public DateTime Birthday { get; set; } = DateTime.Now;
 
