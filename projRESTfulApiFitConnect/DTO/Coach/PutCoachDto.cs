@@ -1,6 +1,6 @@
 ﻿using projRESTfulApiFitConnect.Models;
 
-namespace projRESTfulApiFitConnect.DTO
+namespace projRESTfulApiFitConnect.DTO.Coach
 {
     public class PutCoachDto
     {

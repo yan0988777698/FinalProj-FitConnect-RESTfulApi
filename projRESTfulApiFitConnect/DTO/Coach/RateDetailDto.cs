@@ -1,4 +1,4 @@
-﻿namespace projRESTfulApiFitConnect.DTO
+﻿namespace projRESTfulApiFitConnect.DTO.Coach
 {
     public class RateDetailDto
     {

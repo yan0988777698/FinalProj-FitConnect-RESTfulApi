@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using projRESTfulApiFitConnect.DTO.Coach;
+using projRESTfulApiFitConnect.DTO.Member;
 using projRESTfulApiFitConnect.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -15,71 +16,63 @@ namespace projRESTfulApiFitConnect.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CoachController : ControllerBase
+    public class MemberController : ControllerBase
     {
         private readonly GymContext _context;
         private readonly IWebHostEnvironment _env;
 
-        public CoachController(GymContext context, IWebHostEnvironment env)
+        public MemberController(GymContext context, IWebHostEnvironment env)
         {
             _context = context;
             _env = env;
         }
 
-        // GET: api/Coach
-        //取得所有教練資料(個人資料、自我介紹)
+        // GET: api/Member
+        //取得所有會員資料(個人資料)
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<CoachDetailDto>>> GetCoaches()
+        public async Task<ActionResult> GetMembers()
         {
             string filepath = "";
 
-            List<CoachDetailDto> coachDetailDtos = new List<CoachDetailDto>();
+            List<MemberDetailDto> memberDetailDtos = new List<MemberDetailDto>();
 
-            var coaches = await _context.TIdentities
-                        .Where(x => x.RoleId == 2)
+            var members = await _context.TIdentities
+                        .Where(x => x.RoleId == 1)
                         .Include(x => x.Gender)
-                        .Include(x => x.TcoachInfoIds)
-                        .Include(x => x.TcoachExperts)
-                        .ThenInclude(te => te.Class)
+                        .Include(x => x.Role)
                         .ToListAsync();
 
-            foreach (var item in coaches)
+            foreach (var item in members)
             {
-                var experts = item.TcoachExperts.Select(te => new ExpertiseDto
-                {
-                    ClassName = te.Class.ClassName
-                }).ToList();
                 string base64Image = "";
-                filepath = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", item.Photo);
+                filepath = Path.Combine(_env.ContentRootPath, "Images", "MemberImages", item.Photo);
                 if (System.IO.File.Exists(filepath))
                 {
                     byte[] bytes = await System.IO.File.ReadAllBytesAsync(filepath);
                     base64Image = Convert.ToBase64String(bytes);
                 }
-                string intro = string.Join(", ", item.TcoachInfoIds.Select(i => i.CoachIntro));
 
-                CoachDetailDto coachDetailDto = new CoachDetailDto()
+                MemberDetailDto memberDetailDto = new MemberDetailDto()
                 {
                     Id = item.Id,
                     Name = item.Name,
                     Phone = item.Phone,
                     EMail = item.EMail,
                     Photo = base64Image,
-                    Intro = intro,
                     Birthday = item.Birthday,
                     Address = item.Address,
-                    Experties = experts,
-                    GenderDescription = item.Gender.GenderText
+                    GenderDescription = item.Gender.GenderText,
+                    RoleDescription = item.Role.RoleDescribe
                 };
-                coachDetailDtos.Add(coachDetailDto);
+                memberDetailDtos.Add(memberDetailDto);
             }
-            return Ok(coachDetailDtos);
+            return Ok(memberDetailDtos);
         }
 
-        // GET: api/Coach/5
-        //取得特定教練資料
+        // GET: api/Member/5
+        //取得特定會員資料(個人資料、預約課程、評論紀錄、追蹤)
         [HttpGet("{id}")]
-        public async Task<ActionResult> GetCoach(int id)
+        public async Task<ActionResult> GetMember(int id)
         {
             string base64Image = "";
             List<RateDetailDto> rateDetailDtos = new List<RateDetailDto>();
@@ -96,9 +89,9 @@ namespace projRESTfulApiFitConnect.Controllers
             var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
             var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
             var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
-            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x=>x.CourseTime).Include(x=>x.ClassStatus).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseTime).Include(x => x.ClassStatus).ToListAsync();
             var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
-            
+
             if (!string.IsNullOrEmpty(coach.Photo))
             {
                 string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", coach.Photo);
@@ -107,7 +100,7 @@ namespace projRESTfulApiFitConnect.Controllers
             }
             foreach (var expert in experts)
             {
-                ExpertiseDto expertiseDto= new ExpertiseDto()
+                ExpertiseDto expertiseDto = new ExpertiseDto()
                 {
                     ClassName = expert.Class.ClassName,
                 };
@@ -172,7 +165,6 @@ namespace projRESTfulApiFitConnect.Controllers
                 };
                 scheduleDatailDtos.Add(scheduleDatailDto);
             }
-
 
             var result = new
             {
