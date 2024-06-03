@@ -95,10 +95,10 @@ namespace projRESTfulApiFitConnect.Controllers
 
             var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
             var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
-            var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
-            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x=>x.CourseTime).Include(x=>x.ClassStatus).ToListAsync();
+            var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).Include(x=>x.Coach).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseTime).Include(x => x.ClassStatus).ToListAsync();
             var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
-            
+
             if (!string.IsNullOrEmpty(coach.Photo))
             {
                 string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", coach.Photo);
@@ -107,7 +107,7 @@ namespace projRESTfulApiFitConnect.Controllers
             }
             foreach (var expert in experts)
             {
-                ExpertiseDto expertiseDto= new ExpertiseDto()
+                ExpertiseDto expertiseDto = new ExpertiseDto()
                 {
                     ClassName = expert.Class.ClassName,
                 };
@@ -133,6 +133,7 @@ namespace projRESTfulApiFitConnect.Controllers
                 {
                     ReserveId = rate.ReserveId,
                     Member = rate.Reserve.Member.Name,
+                    Coach = rate.Coach.Name,
                     Class = rate.Reserve.ClassSchedule.Class.ClassName,
                     RateClass = rate.RateClass,
                     ClassDescribe = rate.ClassDescribe,
