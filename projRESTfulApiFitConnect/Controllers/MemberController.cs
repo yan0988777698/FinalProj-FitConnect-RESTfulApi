@@ -239,75 +239,83 @@ namespace projRESTfulApiFitConnect.Controllers
 
         // PUT: api/Member/5
         //修改會員資料
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCoach(PutCoachDto putCoachDto, IFormFile img)
+        public async Task<IActionResult> PutCoach(PutMemberDto putMemberDto)
         {
-            var coach = await _context.TIdentities.FindAsync(putCoachDto.Id);
-            coach.Name = putCoachDto.Name;
-            coach.Phone = putCoachDto.Phone;
-            coach.Password = putCoachDto.Password;
-            coach.EMail = putCoachDto.EMail;
-            if (img != null)
+            var member = await _context.TIdentities.FindAsync(putMemberDto.Id);
+            member.Name = putMemberDto.Name;
+            member.Phone = putMemberDto.Phone;
+            member.Password = putMemberDto.Password;
+            member.EMail = putMemberDto.EMail;
+            if (putMemberDto.Photo != null)
             {
-                coach.Photo = img.FileName;
+                string fileName = Guid.NewGuid() + putMemberDto.Photo.FileName;
+                string path = Path.Combine(_env.ContentRootPath, @"Images\MemberImages", fileName);
+                using (FileStream fs = new FileStream(path, FileMode.Create))
+                {
+                    putMemberDto.Photo.CopyTo(fs);
+                }
+                member.Photo = fileName;
             }
-            coach.Birthday = putCoachDto.Birthday;
-            coach.Address = putCoachDto.Address;
-            coach.GenderId = putCoachDto.GenderId;
+            member.Birthday = putMemberDto.Birthday;
+            member.Address = putMemberDto.Address;
+            member.GenderId = putMemberDto.GenderId;
             await _context.SaveChangesAsync();
 
-            return Ok("教練資訊已成功更新");
+            return Ok("會員資訊已成功更新");
         }
 
-        // POST: api/TIdentities
-        //新增教練資料
+        // POST: api/Member
+        //新增會員資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<PutCoachDto>> PostCoach([FromForm] PutCoachDto putCoachDto)
+        public async Task<ActionResult<PutMemberDto>> PostMember([FromForm] PutMemberDto putMemberDto)
         {
-            TIdentity identity = new TIdentity();
-            identity.Name = putCoachDto.Name;
-            identity.Phone = putCoachDto.Phone;
-            identity.Password = putCoachDto.Password;
-            identity.EMail = putCoachDto.EMail;
-            if (putCoachDto.Photo != null)
+            TIdentity member = new TIdentity();
+            member.Name = putMemberDto.Name;
+            member.Phone = putMemberDto.Phone;
+            member.Password = putMemberDto.Password;
+            member.EMail = putMemberDto.EMail;
+            if (putMemberDto.Photo != null)
             {
-                identity.Photo = putCoachDto.Photo.FileName;
-                string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", putCoachDto.Photo.FileName);
+                member.Photo = putMemberDto.Photo.FileName;
+                string path = Path.Combine(_env.ContentRootPath, "Images", "MemberImages", putMemberDto.Photo.FileName);
                 using (FileStream fileStream = new FileStream(path, FileMode.Create))
                 {
-                    putCoachDto.Photo.CopyTo(fileStream);
+                    putMemberDto.Photo.CopyTo(fileStream);
                 }
             }
-            identity.Birthday = putCoachDto.Birthday;
-            identity.Address = putCoachDto.Address;
-            identity.GenderId = putCoachDto.GenderId;
-            identity.RoleId = putCoachDto.RoleId;
-            _context.TIdentities.Add(identity);
+            member.Birthday = putMemberDto.Birthday;
+            member.Address = putMemberDto.Address;
+            member.GenderId = putMemberDto.GenderId;
+            member.RoleId = putMemberDto.RoleId;
+            _context.TIdentities.Add(member);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCoach", new { id = identity.Id }, putCoachDto);
+            return CreatedAtAction("GetMember", new { id = member.Id }, putMemberDto);
         }
 
-        // DELETE: api/TIdentities/5
+        // DELETE: api/Member/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTIdentity(int id)
+        public async Task<IActionResult> DeleteMember(int id)
         {
-            var tIdentity = await _context.TIdentities.FindAsync(id);
-            if (tIdentity == null)
+            var member = await _context.TIdentities.FindAsync(id);
+            if (member == null)
             {
                 return NotFound();
             }
 
-            var info = await _context.TcoachInfoIds.Where(x => x.CoachId == id).ToListAsync();
-            _context.TcoachInfoIds.RemoveRange(info);
-            var expert = await _context.TcoachExperts.Where(x => x.CoachId == id).ToListAsync();
-            _context.TcoachExperts.RemoveRange(expert);
-            _context.TIdentities.Remove(tIdentity);
+            var rates = await _context.TmemberRateClasses.Where(x => x.MemberId == id).ToListAsync();
+            _context.TmemberRateClasses.RemoveRange(rates);
+            var reservedCourses = await _context.TclassReserves.Where(x => x.MemberId == id).ToListAsync();
+            _context.TclassReserves.RemoveRange(reservedCourses);
+            var followAndBlackLisst = await _context.TmemberFollows.Where(x => x.MemberId == id).ToListAsync();
+            _context.TmemberFollows.RemoveRange(followAndBlackLisst);
+
+            _context.TIdentities.Remove(member);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok("會員資料刪除成功");
         }
 
         private bool TIdentityExists(int id)
