@@ -26,7 +26,7 @@ namespace projRESTfulApiFitConnect.Controllers
             _env = env;
         }
 
-        // POSt: api/Coach
+        // POST: api/Coach
         // 依照篩選取得教練資料(個人資料、自我介紹)
         [HttpPost("GetCoaches")]
         public async Task<ActionResult<IEnumerable<CoachDetailDto>>> GetCoaches([FromBody] PageDetailDto pageDetailDto)
@@ -34,7 +34,6 @@ namespace projRESTfulApiFitConnect.Controllers
             string filepath = "";
 
             List<CoachDetailDto> coachDetailDtos = new List<CoachDetailDto>();
-
             var coaches = await _context.TIdentities
                         .Where(x => x.RoleId == 2)
                         .Include(x => x.Gender)
@@ -77,33 +76,41 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // GET: api/Coach/5
-        // 取得特定教練資料
+        //取得特定教練資料
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCoach(int id)
         {
-            var coach = await _context.TIdentities
-                                      .Where(x => x.RoleId == 2 && x.Id == id)
-                                      .Include(x => x.Gender)
-                                      .Include(x => x.Role)
-                                      .Include(x => x.TcoachInfoIds)
-                                      .FirstOrDefaultAsync();
+            string base64Image = "";
+            List<RateDetailDto> rateDetailDtos = new List<RateDetailDto>();
+            List<FieldDetailDto> fieldDetailDtos = new List<FieldDetailDto>();
+            List<ScheduleDatailDto> scheduleDatailDtos = new List<ScheduleDatailDto>();
+            List<ExpertiseDto> expertiseDtos = new List<ExpertiseDto>();
 
+            var coach = await _context.TIdentities.Where(x => x.RoleId == 2 && x.Id == id).Include(x => x.Gender).Include(x => x.Role).Include(x => x.TcoachInfoIds).FirstOrDefaultAsync();
             if (coach == null)
             {
                 return NotFound();
             }
-
             var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
-            var base64Image = GetCoachImageBase64(coach.Photo);
-
-            var expertsTask = GetExpertiseDtosAsync(id);
-            var ratesTask = GetRateDetailDtosAsync(id);
-            var schedulesTask = GetScheduleDetailDtosAsync(id);
-            var fieldsTask = GetFieldDetailDtosAsync(id);
-
-            await Task.WhenAll(expertsTask, ratesTask, schedulesTask, fieldsTask);
-
-            var coachDetailDto = new CoachDetailDto
+            var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
+            var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseTime).Include(x => x.ClassStatus).ToListAsync();
+            var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
+            if (!string.IsNullOrEmpty(coach.Photo))
+            {
+                string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", coach.Photo);
+                byte[] bytes = System.IO.File.ReadAllBytes(path);
+                base64Image = Convert.ToBase64String(bytes);
+            }
+            foreach (var expert in experts)
+            {
+                ExpertiseDto expertiseDto = new ExpertiseDto()
+                {
+                    ClassName = expert.Class.ClassName,
+                };
+                expertiseDtos.Add(expertiseDto);
+            }
+            CoachDetailDto coachDetailDto = new CoachDetailDto()
             {
                 Id = coach.Id,
                 Name = coach.Name,
@@ -112,111 +119,68 @@ namespace projRESTfulApiFitConnect.Controllers
                 Photo = base64Image,
                 Birthday = coach.Birthday,
                 Address = coach.Address,
-                Intro = coachInfo?.CoachIntro,
-                Experties = await expertsTask,
+                Intro = coachInfo.CoachIntro,
+                Experties = expertiseDtos,
                 RoleDescription = coach.Role.RoleDescribe,
                 GenderDescription = coach.Gender.GenderText
             };
+            foreach (var rate in rates)
+            {
+                RateDetailDto rateDetailDto = new RateDetailDto()
+                {
+                    ReserveId = rate.ReserveId,
+                    Member = rate.Reserve.Member.Name,
+                    Class = rate.Reserve.ClassSchedule.Class.ClassName,
+                    RateClass = rate.RateClass,
+                    ClassDescribe = rate.ClassDescribe,
+                    RateCoach = rate.RateCoach,
+                    CoachDescribe = rate.CoachDescribe
+                };
+                rateDetailDtos.Add(rateDetailDto);
+            }
+            foreach (var field in fields)
+            {
+                FieldDetailDto fieldDetailDto = new FieldDetailDto()
+                {
+                    FieldReserveId = field.FieldReserveId,
+                    City = field.Field.Gym.Region.City.City,
+                    Region = field.Field.Gym.Region.Region,
+                    Gym = field.Field.Gym.Name,
+                    Field = field.Field.FieldName,
+                    PaymentStatus = field.PaymentStatus,
+                    ReserveStatus = field.ReserveStatus
+                };
+                fieldDetailDtos.Add(fieldDetailDto);
+            }
+            foreach (var schedule in schedules)
+            {
+                ScheduleDatailDto scheduleDatailDto = new ScheduleDatailDto()
+                {
+                    ClassScheduleId = schedule.ClassScheduleId,
+                    Class = schedule.Class.ClassName,
+                    Coach = schedule.Coach.Name,
+                    Field = schedule.Field.FieldName,
+                    CourseDate = schedule.CourseDate,
+                    CourseTime = schedule.CourseTime.TimeName,
+                    MaxStudent = schedule.MaxStudent,
+                    ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
+                    ClassPayment = schedule.ClassPayment,
+                    CoachPayment = schedule.CoachPayment
+                };
+                scheduleDatailDtos.Add(scheduleDatailDto);
+            }
+
 
             var result = new
             {
                 coachDetailDto,
-                RateDetails = await ratesTask,
-                ScheduleDetails = await schedulesTask,
-                FieldDetails = await fieldsTask
+                rateDetailDtos,
+                scheduleDatailDtos,
+                fieldDetailDtos
             };
-
             return Ok(result);
         }
 
-        private string GetCoachImageBase64(string photo)
-        {
-            if (string.IsNullOrEmpty(photo))
-            {
-                return string.Empty;
-            }
-
-            string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", photo);
-            byte[] bytes = System.IO.File.ReadAllBytes(path);
-            return Convert.ToBase64String(bytes);
-        }
-
-        private async Task<List<ExpertiseDto>> GetExpertiseDtosAsync(int coachId)
-        {
-            var experts = await _context.TcoachExperts
-                                        .Where(x => x.CoachId == coachId)
-                                        .Include(x => x.Class)
-                                        .ToListAsync();
-
-            return experts.Select(expert => new ExpertiseDto
-            {
-                ClassName = expert.Class.ClassName
-            }).ToList();
-        }
-
-        private async Task<List<RateDetailDto>> GetRateDetailDtosAsync(int coachId)
-        {
-            var rates = await _context.TmemberRateClasses
-                                      .Where(x => x.CoachId == coachId)
-                                      .Include(x => x.Reserve.Member)
-                                      .Include(x => x.Reserve.ClassSchedule.Class)
-                                      .Include(x => x.Coach)
-                                      .ToListAsync();
-
-            return rates.Select(rate => new RateDetailDto
-            {
-                ReserveId = rate.ReserveId,
-                Member = rate.Reserve.Member.Name,
-                Coach = rate.Coach.Name,
-                Class = rate.Reserve.ClassSchedule.Class.ClassName,
-                RateClass = rate.RateClass,
-                ClassDescribe = rate.ClassDescribe,
-                RateCoach = rate.RateCoach,
-                CoachDescribe = rate.CoachDescribe
-            }).ToList();
-        }
-
-        private async Task<List<ScheduleDatailDto>> GetScheduleDetailDtosAsync(int coachId)
-        {
-            var schedules = await _context.TclassSchedules
-                                          .Where(x => x.CoachId == coachId)
-                                          .Include(x => x.CourseTime)
-                                          .Include(x => x.ClassStatus)
-                                          .ToListAsync();
-
-            return schedules.Select(schedule => new ScheduleDatailDto
-            {
-                ClassScheduleId = schedule.ClassScheduleId,
-                Class = schedule.Class.ClassName,
-                Coach = schedule.Coach.Name,
-                Field = schedule.Field.FieldName,
-                CourseDate = schedule.CourseDate,
-                CourseTime = schedule.CourseTime.TimeName,
-                MaxStudent = schedule.MaxStudent,
-                ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
-                ClassPayment = schedule.ClassPayment,
-                CoachPayment = schedule.CoachPayment
-            }).ToList();
-        }
-
-        private async Task<List<FieldDetailDto>> GetFieldDetailDtosAsync(int coachId)
-        {
-            var fields = await _context.TfieldReserves
-                                       .Where(x => x.CoachId == coachId)
-                                       .Include(x => x.Field.Gym.Region.City)
-                                       .ToListAsync();
-
-            return fields.Select(field => new FieldDetailDto
-            {
-                FieldReserveId = field.FieldReserveId,
-                City = field.Field.Gym.Region.City.City,
-                Region = field.Field.Gym.Region.Region,
-                Gym = field.Field.Gym.Name,
-                Field = field.Field.FieldName,
-                PaymentStatus = field.PaymentStatus,
-                ReserveStatus = field.ReserveStatus
-            }).ToList();
-        }
 
 
         // PUT: api/Coach/5
