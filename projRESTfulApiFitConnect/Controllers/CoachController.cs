@@ -26,10 +26,10 @@ namespace projRESTfulApiFitConnect.Controllers
             _env = env;
         }
 
-        // GET: api/Coach
-        // 取得所有教練資料(個人資料、自我介紹)
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<CoachDetailDto>>> GetCoaches()
+        // POSt: api/Coach
+        // 依照篩選取得教練資料(個人資料、自我介紹)
+        [HttpPost("GetCoaches")]
+        public async Task<ActionResult<IEnumerable<CoachDetailDto>>> GetCoaches([FromBody] PageDetailDto pageDetailDto)
         {
             string filepath = "";
 
@@ -73,7 +73,7 @@ namespace projRESTfulApiFitConnect.Controllers
                 };
                 coachDetailDtos.Add(coachDetailDto);
             }
-            return Ok(coachDetailDtos);
+            return Ok(coachDetailDtos.Skip((pageDetailDto.page-1)*pageDetailDto.pageSize).Take(pageDetailDto.pageSize));
         }
 
         // GET: api/Coach/5
