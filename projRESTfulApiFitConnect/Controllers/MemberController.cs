@@ -29,7 +29,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // GET: api/Member
-        //取得所有會員資料(個人資料)
+        // 取得所有會員資料(個人資料)
         [HttpGet]
         public async Task<ActionResult> GetMembers()
         {
@@ -71,7 +71,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // GET: api/Member/5
-        //取得特定會員資料(個人資料、預約課程、評論紀錄、追蹤)
+        // 取得特定會員資料(個人資料、預約課程、評論紀錄、追蹤)
         [HttpGet("{id}")]
         public async Task<ActionResult> GetMember(int id)
         {
@@ -238,7 +238,7 @@ namespace projRESTfulApiFitConnect.Controllers
 
 
         // PUT: api/Member/5
-        //修改會員資料
+        // 修改會員資料
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCoach(PutMemberDto putMemberDto)
         {
@@ -266,7 +266,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // POST: api/Member
-        //新增會員資料
+        // 新增會員資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PutMemberDto>> PostMember([FromForm] PutMemberDto putMemberDto)
@@ -296,6 +296,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // DELETE: api/Member/5
+        // 刪除會員所有資料(真的全部刪掉)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteMember(int id)
         {

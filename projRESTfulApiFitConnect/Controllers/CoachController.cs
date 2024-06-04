@@ -27,7 +27,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // GET: api/Coach
-        //取得所有教練資料(個人資料、自我介紹)
+        // 取得所有教練資料(個人資料、自我介紹)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CoachDetailDto>>> GetCoaches()
         {
@@ -77,7 +77,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // GET: api/Coach/5
-        //取得特定教練資料
+        // 取得特定教練資料
         [HttpGet("{id}")]
         public async Task<ActionResult> GetCoach(int id)
         {
@@ -220,7 +220,7 @@ namespace projRESTfulApiFitConnect.Controllers
 
 
         // PUT: api/Coach/5
-        //修改教練資料
+        // 修改教練資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutCoach([FromForm] PutCoachDto putCoachDto)
@@ -249,7 +249,7 @@ namespace projRESTfulApiFitConnect.Controllers
         }
 
         // POST: api/TIdentities
-        //新增教練資料
+        // 新增教練資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<PutCoachDto>> PostCoach([FromForm] PutCoachDto putCoachDto)
@@ -278,7 +278,8 @@ namespace projRESTfulApiFitConnect.Controllers
             return CreatedAtAction("GetCoach", new { id = identity.Id }, putCoachDto);
         }
 
-        // DELETE: api/TIdentities/5
+        // DELETE: api/Coach/5
+        // 刪除教練資料](真的全部刪掉)
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTIdentity(int id)
         {
