@@ -211,7 +211,7 @@ namespace projRESTfulApiFitConnect.Controllers
 
                 var dateAndTimeDto = new DateAndTimeDto
                 {
-                    date = sameCourseButTime.FirstOrDefault()?.CourseDate,
+                    date = DateOnly.FromDateTime(sameCourseButTime.FirstOrDefault().CourseDate),
                     timeList = timeSpans
                 };
 
@@ -226,6 +226,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     Field = item.ClassSchedule.Field.FieldName,
                     Time = dateAndTimeDto,
                     MaxStudent = item.ClassSchedule.MaxStudent,
+                    CourseFee = item.ClassSchedule.ClassPayment,
                     PaymentStatus = item.PaymentStatus,
                     ReserveStatus = item.ReserveStatus
                 };

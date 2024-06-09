@@ -2,7 +2,7 @@
 {
     public class DateAndTimeDto
     {
-        public DateTime? date { get; set; }
+        public DateOnly? date { get; set; }
         public List<TimeSpan>? timeList { get; set; }
 
     }
