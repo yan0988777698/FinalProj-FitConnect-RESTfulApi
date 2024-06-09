@@ -72,7 +72,7 @@ namespace projRESTfulApiFitConnect.Controllers
                 };
                 coachDetailDtos.Add(coachDetailDto);
             }
-            return Ok(coachDetailDtos.Skip((pageDetailDto.page-1)*pageDetailDto.pageSize).Take(pageDetailDto.pageSize));
+            return Ok(coachDetailDtos.Skip((pageDetailDto.page - 1) * pageDetailDto.pageSize).Take(pageDetailDto.pageSize));
         }
 
         // GET: api/Coach/5
@@ -160,7 +160,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     Class = schedule.Class.ClassName,
                     Coach = schedule.Coach.Name,
                     Field = schedule.Field.FieldName,
-                    CourseDate = schedule.CourseDate,
+                    CourseDate = DateOnly.FromDateTime(schedule.CourseDate),
                     CourseTime = schedule.CourseTime.TimeName,
                     MaxStudent = schedule.MaxStudent,
                     ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
