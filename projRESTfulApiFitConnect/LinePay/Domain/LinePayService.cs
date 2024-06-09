@@ -8,12 +8,6 @@ namespace projRESTfulApiFitConnect.LinePay.Domain
 {
     public class LinePayService
     {
-        public LinePayService()
-        {
-            client = new HttpClient();
-            _jsonProvider = new JsonProvider();
-        }
-
         private readonly string channelId = "2005563991";
         private readonly string channelSecretKey = "e8cc6b6f807a0428e07ae607ab59a13f";
 
@@ -22,7 +16,11 @@ namespace projRESTfulApiFitConnect.LinePay.Domain
 
         private static HttpClient client;
         private readonly JsonProvider _jsonProvider;
-
+        public LinePayService()
+        {
+            client = new HttpClient();
+            _jsonProvider = new JsonProvider();
+        }
 
         // 送出建立交易請求至 Line Pay Server
         public async Task<PaymentResponseDto> SendPaymentRequest(PaymentRequestDto dto)
@@ -75,7 +73,7 @@ namespace projRESTfulApiFitConnect.LinePay.Domain
             var responseDto = _jsonProvider.Deserialize<PaymentConfirmResponseDto>(await response.Content.ReadAsStringAsync());
             return responseDto;
         }
-        public async void TransactionCancel(string transactionId)
+        public void TransactionCancel(string transactionId)
         {
             //使用者取消交易則會到這裏。
             Console.WriteLine($"訂單 {transactionId} 已取消");
