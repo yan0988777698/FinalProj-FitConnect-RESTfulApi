@@ -48,4 +48,12 @@ public partial class TIdentity
     public virtual ICollection<TmemberFollow> TmemberFollowMembers { get; set; } = new List<TmemberFollow>();
 
     public virtual ICollection<TmemberRateClass> TmemberRateClasses { get; set; } = new List<TmemberRateClass>();
+
+    public virtual ICollection<TnewsComment> TnewsComments { get; set; } = new List<TnewsComment>();
+
+    public virtual ICollection<Torder> Torders { get; set; } = new List<Torder>();
+
+    public virtual ICollection<TproductShoppingcart> TproductShoppingcarts { get; set; } = new List<TproductShoppingcart>();
+
+    public virtual ICollection<TproductTrack> TproductTracks { get; set; } = new List<TproductTrack>();
 }

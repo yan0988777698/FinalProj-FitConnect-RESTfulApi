@@ -9,5 +9,7 @@ public partial class TtimesDetail
 
     public TimeSpan TimeName { get; set; }
 
-    public virtual ICollection<TclassSchedule> TclassSchedules { get; set; } = new List<TclassSchedule>();
+    public virtual ICollection<TclassSchedule> TclassScheduleCourseEndTimes { get; set; } = new List<TclassSchedule>();
+
+    public virtual ICollection<TclassSchedule> TclassScheduleCourseStartTimes { get; set; } = new List<TclassSchedule>();
 }

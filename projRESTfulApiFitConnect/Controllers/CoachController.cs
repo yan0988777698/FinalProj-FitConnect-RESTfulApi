@@ -94,7 +94,7 @@ namespace projRESTfulApiFitConnect.Controllers
             var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
             var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
             var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
-            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseTime).Include(x => x.ClassStatus).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseStartTime).Include(x => x.ClassStatus).ToListAsync();
             var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
             if (!string.IsNullOrEmpty(coach.Photo))
             {
@@ -145,7 +145,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     FieldReserveId = field.FieldReserveId,
                     City = field.Field.Gym.Region.City.City,
                     Region = field.Field.Gym.Region.Region,
-                    Gym = field.Field.Gym.Name,
+                    Gym = field.Field.Gym.GymName,
                     Field = field.Field.FieldName,
                     PaymentStatus = field.PaymentStatus,
                     ReserveStatus = field.ReserveStatus
@@ -161,7 +161,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     Coach = schedule.Coach.Name,
                     Field = schedule.Field.FieldName,
                     CourseDate = DateOnly.FromDateTime(schedule.CourseDate),
-                    CourseTime = schedule.CourseTime.TimeName,
+                    CourseTime = schedule.CourseStartTime.TimeName,
                     MaxStudent = schedule.MaxStudent,
                     ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
                     ClassPayment = schedule.ClassPayment,

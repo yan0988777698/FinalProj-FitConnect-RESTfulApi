@@ -169,7 +169,7 @@ namespace projRESTfulApiFitConnect.Controllers
             return await _context.TclassReserves
                 .Where(x => x.MemberId == memberId)
                 .Include(x => x.ClassSchedule.Class)
-                .Include(x => x.ClassSchedule.CourseTime)
+                .Include(x => x.ClassSchedule.CourseStartTime)
                 .Include(x => x.ClassSchedule.Coach)
                 .Include(x => x.ClassSchedule.Field.Gym.Region.City)
                 .GroupBy(x => new { x.ClassSchedule.ClassId, x.ClassSchedule.CoachId, x.ClassSchedule.FieldId, x.ClassSchedule.CourseDate })
@@ -204,10 +204,10 @@ namespace projRESTfulApiFitConnect.Controllers
                                 && x.CoachId == item.ClassSchedule.CoachId
                                 && x.FieldId == item.ClassSchedule.FieldId
                                 && x.CourseDate == item.ClassSchedule.CourseDate)
-                    .Include(x => x.CourseTime)
+                    .Include(x => x.CourseStartTime)
                     .ToListAsync();
 
-                var timeSpans = sameCourseButTime.Select(time => time.CourseTime.TimeName).ToList();
+                var timeSpans = sameCourseButTime.Select(time => time.CourseStartTime.TimeName).ToList();
 
                 var dateAndTimeDto = new DateAndTimeDto
                 {
@@ -222,7 +222,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     Coach = item.ClassSchedule.Coach.Name,
                     City = item.ClassSchedule.Field.Gym.Region.City.City,
                     Region = item.ClassSchedule.Field.Gym.Region.Region,
-                    Gym = item.ClassSchedule.Field.Gym.Name,
+                    Gym = item.ClassSchedule.Field.Gym.GymName,
                     Field = item.ClassSchedule.Field.FieldName,
                     Time = dateAndTimeDto,
                     MaxStudent = item.ClassSchedule.MaxStudent,
