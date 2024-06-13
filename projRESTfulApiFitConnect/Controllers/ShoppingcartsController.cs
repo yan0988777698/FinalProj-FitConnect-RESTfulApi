@@ -51,6 +51,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     shoppingCartId=item.ProductShoppingcartId,
                     productId = item.ProductId,
                     productName = item.Product.ProductName,
+                    quantity = item.ProductQuantity,
                     unitPrice = item.Product.ProductUnitprice,
                     productImage = base64Image,
                 };

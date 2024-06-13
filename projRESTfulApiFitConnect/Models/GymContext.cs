@@ -15,6 +15,8 @@ public partial class GymContext : DbContext
     {
     }
 
+    public virtual DbSet<Address> Addresses { get; set; }
+
     public virtual DbSet<ClassReservedDetail> ClassReservedDetails { get; set; }
 
     public virtual DbSet<FieldReservedDetail> FieldReservedDetails { get; set; }
@@ -117,6 +119,23 @@ public partial class GymContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Address>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("Address");
+
+            entity.Property(e => e.City)
+                .HasMaxLength(10)
+                .HasColumnName("city");
+            entity.Property(e => e.Road)
+                .HasMaxLength(200)
+                .HasColumnName("road");
+            entity.Property(e => e.SiteId)
+                .HasMaxLength(50)
+                .HasColumnName("site_id");
+        });
+
         modelBuilder.Entity<ClassReservedDetail>(entity =>
         {
             entity
