@@ -46,6 +46,7 @@ namespace projRESTfulApiFitConnect.Controllers
             {
                 var experts = item.TcoachExperts.Select(te => new ExpertiseDto
                 {
+                    classID = te.ClassId,
                     ClassName = te.Class.ClassName
                 }).ToList();
                 string base64Image = "";
@@ -106,6 +107,7 @@ namespace projRESTfulApiFitConnect.Controllers
             {
                 ExpertiseDto expertiseDto = new ExpertiseDto()
                 {
+                    classID = expert.Class.ClassId,
                     ClassName = expert.Class.ClassName,
                 };
                 expertiseDtos.Add(expertiseDto);
