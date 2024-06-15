@@ -10,9 +10,9 @@ namespace projRESTfulApiFitConnect.Controllers
     public class LinePayController : ControllerBase
     {
         private readonly LinePayService _linePayService;
-        public LinePayController()
+        public LinePayController(IConfiguration configuration)
         {
-            _linePayService = new LinePayService();
+            _linePayService = new LinePayService(configuration);
         }
 
         [HttpPost("Create")]

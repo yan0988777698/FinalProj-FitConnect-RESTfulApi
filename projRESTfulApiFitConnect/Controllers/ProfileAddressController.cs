@@ -7,11 +7,11 @@ namespace projRESTfulApiFitConnect.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AddressController : ControllerBase
+    public class ProfileAddressController : ControllerBase
     {
         private readonly GymContext _db;
         private readonly IWebHostEnvironment _env;
-        public AddressController(GymContext db, IWebHostEnvironment env)
+        public ProfileAddressController(GymContext db, IWebHostEnvironment env)
         {
             _db = db;
             _env = env;

@@ -8,18 +8,19 @@ namespace projRESTfulApiFitConnect.LinePay.Domain
 {
     public class LinePayService
     {
-        private readonly string channelId = "2005563991";
-        private readonly string channelSecretKey = "e8cc6b6f807a0428e07ae607ab59a13f";
-
+        private readonly string channelId;
+        private readonly string channelSecretKey;
 
         private readonly string linePayBaseApiUrl = "https://sandbox-api-pay.line.me";
 
         private static HttpClient client;
         private readonly JsonProvider _jsonProvider;
-        public LinePayService()
+        public LinePayService(IConfiguration configuration)
         {
             client = new HttpClient();
             _jsonProvider = new JsonProvider();
+            channelId = configuration["LinePay:ChannelId"];
+            channelSecretKey = configuration["LinePay:ChannelSecretKey"];
         }
 
         // 送出建立交易請求至 Line Pay Server
