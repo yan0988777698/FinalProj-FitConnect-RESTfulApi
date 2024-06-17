@@ -12,7 +12,8 @@
 
         public DateOnly CourseDate { get; set; }
 
-        public TimeSpan CourseTime { get; set; }
+        public TimeSpan CourseStartTime { get; set; }
+        public TimeSpan CourseEndTime { get; set; }
 
         public int MaxStudent { get; set; }
 

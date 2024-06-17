@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MimeKit;
+using MailKit.Net.Smtp;
 using projRESTfulApiFitConnect.DTO.Coach;
 using projRESTfulApiFitConnect.Models;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -95,7 +97,7 @@ namespace projRESTfulApiFitConnect.Controllers
             var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
             var experts = await _context.TcoachExperts.Where(x => x.CoachId == id).Include(x => x.Class).ToListAsync();
             var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == id).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
-            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseStartTime).Include(x => x.ClassStatus).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == id).Include(x => x.CourseStartTime).Include(x => x.CourseEndTime).Include(x => x.ClassStatus).Include(x => x.Field).ToListAsync();
             var fields = await _context.TfieldReserves.Where(x => x.CoachId == id).Include(x => x.Field.Gym.Region.City).ToListAsync();
             if (!string.IsNullOrEmpty(coach.Photo))
             {
@@ -163,7 +165,8 @@ namespace projRESTfulApiFitConnect.Controllers
                     Coach = schedule.Coach.Name,
                     Field = schedule.Field.FieldName,
                     CourseDate = DateOnly.FromDateTime(schedule.CourseDate),
-                    CourseTime = schedule.CourseStartTime.TimeName,
+                    CourseStartTime = schedule.CourseStartTime.TimeName,
+                    CourseEndTime = schedule.CourseEndTime.TimeName,
                     MaxStudent = schedule.MaxStudent,
                     ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
                     ClassPayment = schedule.ClassPayment,
@@ -182,8 +185,6 @@ namespace projRESTfulApiFitConnect.Controllers
             };
             return Ok(result);
         }
-
-
 
         // PUT: api/Coach/5
         // 修改教練資料
@@ -268,6 +269,58 @@ namespace projRESTfulApiFitConnect.Controllers
         private bool TIdentityExists(int id)
         {
             return (_context.TIdentities?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+        [HttpPost("SendEmail")]
+        public async Task<ActionResult> SendEmail()
+        {
+            try
+            {
+                // 建立郵件
+                var message = new MimeMessage();
+
+                // 添加寄件者
+                message.From.Add(new MailboxAddress("寄件者", "寄件者@gmail.com"));
+
+                // 添加收件者
+                message.To.Add(new MailboxAddress("收件者", "收件者@gmail.com"));
+
+                // 設定郵件標題
+                message.Subject = "標題";
+
+                // 使用 BodyBuilder 建立郵件內容
+                var bodyBuilder = new BodyBuilder();
+
+                // 設定文字內容
+                bodyBuilder.TextBody = "內容";
+
+                // 設定 HTML 內容
+                //bodyBuilder.HtmlBody = "<p> HTML 內容 </p>";
+
+                // 設定郵件內容
+                message.Body = bodyBuilder.ToMessageBody();
+
+                // 初始化 SMTP 客戶端
+                using (var client = new SmtpClient())
+                {
+                    // 連接到 SMTP 服務器
+                    await client.ConnectAsync("smtp.gmail.com", 465, useSsl: true);
+
+                    // 身份驗證（如果需要）
+                    await client.AuthenticateAsync("寄件者@gmail.com", "寄件者密碼");
+
+                    // 發送郵件
+                    await client.SendAsync(message);
+
+                    // 斷開連接
+                    await client.DisconnectAsync(true);
+                }
+
+                return Ok("郵件發送成功");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"發送郵件失敗: {ex.Message}");
+            }
         }
     }
 }

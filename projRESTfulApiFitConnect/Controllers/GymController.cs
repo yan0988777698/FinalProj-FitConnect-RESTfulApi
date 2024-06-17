@@ -34,7 +34,7 @@ namespace projRESTfulApiFitConnect.Controllers
         [HttpGet("GetOpeningHours/{id}")]
         public async Task<IActionResult> GetGymOpeningHours(int id)
         {
-            var fields = await _db.TGymTimes.Where(x => x.GymId == id).Include(x=>x.GymTimeNavigation).Select(x=>new { x.GymTimeNavigation.TimeName }).ToListAsync();
+            var fields = await _db.TGymTimes.Where(x => x.GymId == id).Include(x=>x.GymTimeNavigation).Select(x=>new { x.GymTimeNavigation.TimeId,x.GymTimeNavigation.TimeName }).ToListAsync();
             return Ok(fields);
         }
 

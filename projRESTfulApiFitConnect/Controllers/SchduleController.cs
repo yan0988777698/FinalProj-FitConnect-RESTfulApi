@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using projRESTfulApiFitConnect.DTO.Schdule;
 using projRESTfulApiFitConnect.Models;
 
 namespace projRESTfulApiFitConnect.Controllers
@@ -16,7 +18,28 @@ namespace projRESTfulApiFitConnect.Controllers
             _context = context;
             _env = env;
         }
-
+        //新增課程
+        [HttpPost]
+        public async Task<IActionResult> CreateSchdule([FromForm] SchduleDto schduleDto)
+        {
+            TclassSchedule tclassSchedule = new TclassSchedule
+            {
+                ClassId = schduleDto.courseId,
+                CoachId = schduleDto.coachId,
+                FieldId = schduleDto.fieldId,
+                CourseDate = schduleDto.date,
+                CourseTimeId = schduleDto.startTimeId,
+                CourseStartTimeId = schduleDto.startTimeId,
+                CourseEndTimeId = schduleDto.endTimeid,
+                MaxStudent = schduleDto.maxStudent,
+                ClassStatusId = 4,
+                ClassPayment = _context.Tfields.FirstOrDefault(x => x.FieldId == schduleDto.fieldId).FieldPayment,
+                CoachPayment = false
+            };
+            _context.TclassSchedules.Add(tclassSchedule);
+            _context.SaveChanges();
+            return Ok(new {success = "success"});
+        }
 
     }
 }
