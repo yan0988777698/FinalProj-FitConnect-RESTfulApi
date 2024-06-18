@@ -32,11 +32,23 @@ namespace projRESTfulApiFitConnect.Controllers
                 CourseStartTimeId = schduleDto.startTimeId,
                 CourseEndTimeId = schduleDto.endTimeid,
                 MaxStudent = schduleDto.maxStudent,
-                ClassStatusId = 4,
-                ClassPayment = _context.Tfields.FirstOrDefault(x => x.FieldId == schduleDto.fieldId).FieldPayment,
+                ClassStatusId = 4, //審核中
+                ClassPayment = schduleDto.classPayment,
                 CoachPayment = false
             };
+            TfieldReserve tfieldReserve = new TfieldReserve
+            {
+                CoachId = schduleDto.coachId,
+                FieldId = schduleDto.fieldId,
+                FieldDate = schduleDto.date,
+                FieldReserveStartTime = schduleDto.startTimeId,
+                FieldReserveEndTime = schduleDto.endTimeid,
+                PaymentStatus = false,
+                ReserveStatus = true
+            };
+
             _context.TclassSchedules.Add(tclassSchedule);
+            _context.TfieldReserves.Add(tfieldReserve);
             _context.SaveChanges();
             return Ok(new {success = "success"});
         }

@@ -10,5 +10,6 @@
         public int endTimeid { get; set; }
         public int fieldId { get; set; }
         public int gymId { get; set; }
+        public int classPayment { get; set; }
     }
 }

@@ -152,7 +152,12 @@ namespace projRESTfulApiFitConnect.Controllers
                     Gym = field.Field.Gym.GymName,
                     Field = field.Field.FieldName,
                     PaymentStatus = field.PaymentStatus,
-                    ReserveStatus = field.ReserveStatus
+                    ReserveStatus = field.ReserveStatus,
+                    CourseDate = DateOnly.FromDateTime(field.FieldDate ?? DateTime.Now),
+                    CourseStartTime = _context.TtimesDetails.FirstOrDefault(x=>x.TimeId == field.FieldReserveStartTime).TimeName,
+                    CourseEndTime = _context.TtimesDetails.FirstOrDefault(x => x.TimeId == field.FieldReserveEndTime).TimeName,
+                    fieldPayment = (int)field.Field.FieldPayment,
+                    floor = field.Field.Floor,
                 };
                 fieldDetailDtos.Add(fieldDetailDto);
             }
