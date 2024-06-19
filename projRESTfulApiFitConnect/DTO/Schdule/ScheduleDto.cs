@@ -1,6 +1,6 @@
 ﻿namespace projRESTfulApiFitConnect.DTO.Schdule
 {
-    public class SchduleDto
+    public class ScheduleDto
     {
         public int coachId { get; set; }
         public int courseId { get; set; }
