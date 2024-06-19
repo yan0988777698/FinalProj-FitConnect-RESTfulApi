@@ -18,6 +18,27 @@ namespace projRESTfulApiFitConnect.Controllers
             _context = context;
             _env = env;
         }
+        //修改課程為待審核
+        [HttpPut]
+        public async Task<IActionResult> UpdateSchedule([FromBody] string[] paymentInfo)
+        {
+            try
+            {
+                foreach (var item in paymentInfo)
+                {
+                    var schedule = _context.TclassSchedules.FirstOrDefault(x => x.FieldReservedId == Convert.ToInt32(item));
+                    schedule.ClassStatusId = 4;
+                    var field = _context.TfieldReserves.FirstOrDefault(x => x.FieldReserveId == Convert.ToInt32(item));
+                    field.PaymentStatus = true;
+                }
+                await _context.SaveChangesAsync();
+                return Ok(new { success = "success" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
         //新增課程與場地
         [HttpPost]
         public async Task<IActionResult> CreateSchedule([FromForm] ScheduleDto scheduleDto)
