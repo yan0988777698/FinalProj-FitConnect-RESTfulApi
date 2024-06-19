@@ -47,7 +47,7 @@ namespace projRESTfulApiFitConnect.Controllers
                     CourseStartTimeId = scheduleDto.startTimeId,
                     CourseEndTimeId = scheduleDto.endTimeId,
                     MaxStudent = scheduleDto.maxStudent,
-                    ClassStatusId = 4, //審核中
+                    ClassStatusId = 5, //場地待付款
                     ClassPayment = scheduleDto.classPayment,
                     CoachPayment = false,
                     FieldReservedId = tfieldReserve.FieldReserveId

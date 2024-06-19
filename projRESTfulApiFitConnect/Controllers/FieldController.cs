@@ -18,13 +18,18 @@ namespace projRESTfulApiFitConnect.Controllers
             _context = context;
             _env = env;
         }
-        
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteField(int id)
         {
+            var deletedSchedule = _context.TclassSchedules.Where(x => x.FieldReservedId == id).FirstOrDefault();
+            if (deletedSchedule != null)
+                _context.TclassSchedules.Remove(deletedSchedule);
+
             var deletedField = _context.TfieldReserves.Find(id);
             if (deletedField == null)
                 return Ok(new { success = "資料不存在" });
+
             _context.TfieldReserves.Remove(deletedField);
             _context.SaveChanges();
             return Ok(new { success = "成功刪除" });
