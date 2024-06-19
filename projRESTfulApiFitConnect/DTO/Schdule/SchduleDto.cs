@@ -7,7 +7,7 @@
         public int maxStudent { get; set; }
         public DateTime date { get; set; }
         public int startTimeId { get; set; }
-        public int endTimeid { get; set; }
+        public int endTimeId { get; set; }
         public int fieldId { get; set; }
         public int gymId { get; set; }
         public int classPayment { get; set; }

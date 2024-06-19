@@ -13,6 +13,8 @@ public partial class Tcompany
 
     public DateTime Timelimit { get; set; }
 
+    public bool Status { get; set; }
+
     public virtual Towner Owner { get; set; } = null!;
 
     public virtual ICollection<TGym> TGyms { get; set; } = new List<TGym>();

@@ -21,7 +21,7 @@ public partial class TIdentity
 
     public DateTime Birthday { get; set; }
 
-    public string Address { get; set; } = null!;
+    public string? Address { get; set; }
 
     public int GenderId { get; set; }
 
@@ -40,6 +40,8 @@ public partial class TIdentity
     public virtual ICollection<TcoachExpert> TcoachExperts { get; set; } = new List<TcoachExpert>();
 
     public virtual ICollection<TcoachInfoId> TcoachInfoIds { get; set; } = new List<TcoachInfoId>();
+
+    public virtual ICollection<TcoachPhoto> TcoachPhotos { get; set; } = new List<TcoachPhoto>();
 
     public virtual ICollection<TfieldReserve> TfieldReserves { get; set; } = new List<TfieldReserve>();
 

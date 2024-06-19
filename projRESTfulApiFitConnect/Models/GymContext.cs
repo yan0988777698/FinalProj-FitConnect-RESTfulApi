@@ -121,10 +121,9 @@ public partial class GymContext : DbContext
     {
         modelBuilder.Entity<Address>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Address");
+            entity.ToTable("Address");
 
+            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.City)
                 .HasMaxLength(10)
                 .HasColumnName("city");
@@ -212,11 +211,6 @@ public partial class GymContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("city");
             entity.Property(e => e.CityId).HasColumnName("city_id");
-            entity.Property(e => e.FieldId).HasColumnName("field_id");
-            entity.Property(e => e.FieldName)
-                .HasMaxLength(50)
-                .HasColumnName("field_name");
-            entity.Property(e => e.FieldPhoto).HasColumnName("field_photo");
             entity.Property(e => e.GymAddress)
                 .HasMaxLength(50)
                 .HasColumnName("Gym_address");
@@ -229,6 +223,7 @@ public partial class GymContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("Gym_park");
             entity.Property(e => e.GymPhoto).HasColumnName("Gym_photo");
+            entity.Property(e => e.GymStatus).HasColumnName("Gym_status");
             entity.Property(e => e.GymTime)
                 .HasMaxLength(20)
                 .HasColumnName("Gym_time");
@@ -456,6 +451,7 @@ public partial class GymContext : DbContext
             entity.Property(e => e.CourseStartTimeId).HasColumnName("course_start_time_id");
             entity.Property(e => e.CourseTimeId).HasColumnName("course_time_id");
             entity.Property(e => e.FieldId).HasColumnName("field_id");
+            entity.Property(e => e.FieldReservedId).HasColumnName("field_reserved_id");
             entity.Property(e => e.MaxStudent).HasColumnName("Max_student");
 
             entity.HasOne(d => d.Class).WithMany(p => p.TclassSchedules)
@@ -485,6 +481,11 @@ public partial class GymContext : DbContext
                 .HasForeignKey(d => d.FieldId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_class_schedule_field");
+
+            entity.HasOne(d => d.FieldReserved).WithMany(p => p.TclassSchedules)
+                .HasForeignKey(d => d.FieldReservedId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_tclass_schedule_tfield_reserve");
         });
 
         modelBuilder.Entity<TclassSort有氧>(entity =>
@@ -568,12 +569,12 @@ public partial class GymContext : DbContext
 
             entity.Property(e => e.CoachPhotoId).HasColumnName("coach_photo_id");
             entity.Property(e => e.CoachPhoto).HasColumnName("coach_photo");
-            entity.Property(e => e.ExpertId).HasColumnName("expert_id");
+            entity.Property(e => e.Id).HasColumnName("id");
 
-            entity.HasOne(d => d.Expert).WithMany(p => p.TcoachPhotos)
-                .HasForeignKey(d => d.ExpertId)
+            entity.HasOne(d => d.IdNavigation).WithMany(p => p.TcoachPhotos)
+                .HasForeignKey(d => d.Id)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_tcoach_photo_tcoach_expert");
+                .HasConstraintName("FK_tcoach_photo_tIdentity");
         });
 
         modelBuilder.Entity<Tcompany>(entity =>
@@ -587,6 +588,7 @@ public partial class GymContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("name");
             entity.Property(e => e.OwnerId).HasColumnName("owner_id");
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.Timelimit)
                 .HasColumnType("date")
                 .HasColumnName("timelimit");
@@ -656,6 +658,7 @@ public partial class GymContext : DbContext
                 .HasMaxLength(50)
                 .HasColumnName("floor");
             entity.Property(e => e.GymId).HasColumnName("Gym_id");
+            entity.Property(e => e.Status).HasColumnName("status");
 
             entity.HasOne(d => d.Gym).WithMany(p => p.Tfields)
                 .HasForeignKey(d => d.GymId)
@@ -1014,6 +1017,7 @@ public partial class GymContext : DbContext
             entity.Property(e => e.Owner)
                 .HasMaxLength(20)
                 .HasColumnName("owner");
+            entity.Property(e => e.Status).HasColumnName("status");
         });
 
         modelBuilder.Entity<Tpayment>(entity =>
