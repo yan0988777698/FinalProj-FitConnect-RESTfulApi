@@ -18,6 +18,31 @@ namespace projRESTfulApiFitConnect.Controllers
             _context = context;
             _env = env;
         }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetSchedule(int id)
+        {
+            var schdule = await _context.TclassSchedules
+                            .Include(x => x.FieldReserved).Include(x => x.Class)
+                            .Include(x => x.Field.Gym)
+                            .FirstOrDefaultAsync(x => x.FieldReservedId == id);
+            ScheduleDetailDto scheduleDetailDto = new ScheduleDetailDto
+            {
+                scheduleId = schdule.ClassScheduleId,
+                coachId = schdule.CoachId,
+                courseId = schdule.ClassId,
+                maxStudent = schdule.MaxStudent,
+                date = schdule.CourseDate,
+                startTimeId = schdule.CourseStartTimeId,
+                endTimeId = schdule.CourseEndTimeId,
+                fieldId = schdule.FieldId,
+                fieldName = schdule.Field.FieldName,
+                gymId = schdule.Field.GymId,
+                gymName = schdule.Field.Gym.GymName,
+                payment = schdule.ClassPayment
+            };
+
+            return Ok(new { success = "success", scheduleDetailDto });
+        }
         //修改課程為待審核
         [HttpPut]
         public async Task<IActionResult> UpdateSchedule([FromBody] string[] paymentInfo)
@@ -82,6 +107,13 @@ namespace projRESTfulApiFitConnect.Controllers
             {
                 return BadRequest(new { error = ex.Message });
             }
+        }
+        //修改課程與場地
+        [HttpPut("ReviseSchedule")]
+        public async Task<IActionResult> ReviseSchedule([FromForm] ScheduleDto scheduleDto)
+        {
+            //TODO:完成場地及課程資料修改
+            return Ok(new { success = "success" });
         }
 
     }
