@@ -45,11 +45,11 @@ namespace projRESTfulApiFitConnect.Controllers
         }
         //修改課程為待審核
         [HttpPut]
-        public async Task<IActionResult> UpdateSchedule([FromBody] string[] paymentInfo)
+        public async Task<IActionResult> UpdateSchedule([FromBody] string[] fieldListInfo)
         {
             try
             {
-                foreach (var item in paymentInfo)
+                foreach (var item in fieldListInfo)
                 {
                     var schedule = _context.TclassSchedules.FirstOrDefault(x => x.FieldReservedId == Convert.ToInt32(item));
                     schedule.ClassStatusId = 4;
