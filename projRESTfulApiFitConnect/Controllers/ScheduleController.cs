@@ -112,7 +112,24 @@ namespace projRESTfulApiFitConnect.Controllers
         [HttpPut("ReviseSchedule")]
         public async Task<IActionResult> ReviseSchedule([FromForm] ScheduleDto scheduleDto)
         {
-            //TODO:完成場地及課程資料修改
+            //完成場地及課程資料修改
+            var selectedSchedule = await _context.TclassSchedules.FirstOrDefaultAsync(x => x.FieldReservedId == scheduleDto.fieldReservedId);
+            selectedSchedule.ClassId = scheduleDto.courseId;
+            selectedSchedule.FieldId = scheduleDto.fieldId;
+            selectedSchedule.CourseDate = scheduleDto.date;
+            selectedSchedule.CourseTimeId = scheduleDto.startTimeId;
+            selectedSchedule.CourseStartTimeId = scheduleDto.startTimeId;
+            selectedSchedule.CourseEndTimeId = scheduleDto.endTimeId;
+            selectedSchedule.MaxStudent = scheduleDto.maxStudent;
+            selectedSchedule.ClassPayment = scheduleDto.classPayment;
+
+            var selectedField = await _context.TfieldReserves.FirstOrDefaultAsync(x => x.FieldReserveId == scheduleDto.fieldReservedId);
+            selectedField.FieldId = scheduleDto.fieldId;
+            selectedField.FieldDate = scheduleDto.date;
+            selectedField.FieldReserveStartTime = scheduleDto.startTimeId;
+            selectedField.FieldReserveEndTime = scheduleDto.endTimeId;
+
+            _context.SaveChangesAsync();
             return Ok(new { success = "success" });
         }
 

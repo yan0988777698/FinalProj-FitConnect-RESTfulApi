@@ -16,6 +16,7 @@ namespace projRESTfulApiFitConnect.Controllers
             _db = db;
             _env = env;
         }
+
         //取得所有場館
         [HttpGet("GetGym")]
         public async Task<IActionResult> GetGym()

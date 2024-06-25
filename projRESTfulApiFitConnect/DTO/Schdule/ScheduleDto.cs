@@ -2,6 +2,7 @@
 {
     public class ScheduleDto
     {
+        public int fieldReservedId {  get; set; }
         public int coachId { get; set; }
         public int courseId { get; set; }
         public int maxStudent { get; set; }
