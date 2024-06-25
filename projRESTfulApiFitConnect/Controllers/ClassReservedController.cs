@@ -26,5 +26,25 @@ namespace projRESTfulApiFitConnect.Controllers
             var reservedClass = await _context.TclassReserves.Where(x => x.ClassScheduleId == id).ToListAsync();
             return Ok(new { currentNumberOfStudent = reservedClass.Count });
         }
+        //修改預約的課程狀態為待已付款
+        [HttpPut]
+        public async Task<IActionResult> UpdateClassReserved([FromBody] int[] courseListInfo)
+        {
+            try
+            {
+                foreach (var item in courseListInfo)
+                {
+                    var schedule = _context.TclassReserves.FirstOrDefault(x => x.ReserveId == item);
+                    schedule.PaymentStatus = true;
+                }
+                await _context.SaveChangesAsync();
+                return Ok(new { success = "success" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 }
