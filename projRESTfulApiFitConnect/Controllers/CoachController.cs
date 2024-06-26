@@ -190,7 +190,121 @@ namespace projRESTfulApiFitConnect.Controllers
             };
             return Ok(result);
         }
+        // POST: api/Coach/Pagination
+        //取得特定教練資料，並依照傳入資料進行分類
+        [HttpPost("Pagination")]
+        public async Task<ActionResult> CoachPagination([FromBody] CoachPaginationDto coachPaginationDto)
+        {
+            string base64Image = "";
+            List<RateDetailDto> rateDetailDtos = new List<RateDetailDto>();
+            List<FieldDetailDto> fieldDetailDtos = new List<FieldDetailDto>();
+            List<ScheduleDatailDto> scheduleDatailDtos = new List<ScheduleDatailDto>();
+            List<ExpertiseDto> expertiseDtos = new List<ExpertiseDto>();
 
+            var coach = await _context.TIdentities.Where(x => x.RoleId == 2 && x.Id == coachPaginationDto.coachId).Include(x => x.Gender).Include(x => x.Role).Include(x => x.TcoachInfoIds).FirstOrDefaultAsync();
+            if (coach == null)
+            {
+                return NotFound();
+            }
+            var coachInfo = coach.TcoachInfoIds.FirstOrDefault();
+            var experts = await _context.TcoachExperts.Where(x => x.CoachId == coachPaginationDto.coachId).Include(x => x.Class).ToListAsync();
+            var rates = await _context.TmemberRateClasses.Where(x => x.CoachId == coachPaginationDto.coachId).Include(x => x.Reserve.Member).Include(x => x.Reserve.ClassSchedule.Class).ToListAsync();
+            var schedules = await _context.TclassSchedules.Where(x => x.CoachId == coachPaginationDto.coachId).Include(x => x.CourseStartTime).Include(x => x.CourseEndTime).Include(x => x.ClassStatus).Include(x => x.Field).Include(x => x.Class).ToListAsync();
+            var fields = await _context.TfieldReserves.Where(x => x.CoachId == coachPaginationDto.coachId).Include(x => x.Field.Gym.Region.City).ToListAsync();
+            if (!string.IsNullOrEmpty(coach.Photo))
+            {
+                string path = Path.Combine(_env.ContentRootPath, "Images", "CoachImages", coach.Photo);
+                byte[] bytes = System.IO.File.ReadAllBytes(path);
+                base64Image = Convert.ToBase64String(bytes);
+            }
+            foreach (var expert in experts)
+            {
+                ExpertiseDto expertiseDto = new ExpertiseDto()
+                {
+                    classID = expert.Class.ClassId,
+                    ClassName = expert.Class.ClassName,
+                };
+                expertiseDtos.Add(expertiseDto);
+            }
+            CoachDetailDto coachDetailDto = new CoachDetailDto()
+            {
+                Id = coach.Id,
+                Name = coach.Name,
+                Phone = coach.Phone,
+                EMail = coach.EMail,
+                Photo = base64Image,
+                Birthday = coach.Birthday,
+                Address = coach.Address,
+                Intro = coachInfo.CoachIntro,
+                Experties = expertiseDtos,
+                RoleDescription = coach.Role.RoleDescribe,
+                GenderDescription = coach.Gender.GenderText
+            };
+            foreach (var rate in rates)
+            {
+                RateDetailDto rateDetailDto = new RateDetailDto()
+                {
+                    ReserveId = rate.ReserveId,
+                    Member = rate.Reserve.Member.Name,
+                    Class = rate.Reserve.ClassSchedule.Class.ClassName,
+                    RateClass = rate.RateClass,
+                    ClassDescribe = rate.ClassDescribe,
+                    RateCoach = rate.RateCoach,
+                    CoachDescribe = rate.CoachDescribe
+                };
+                rateDetailDtos.Add(rateDetailDto);
+            }
+            foreach (var field in fields)
+            {
+                FieldDetailDto fieldDetailDto = new FieldDetailDto()
+                {
+                    FieldReserveId = field.FieldReserveId,
+                    City = field.Field.Gym.Region.City.City,
+                    Region = field.Field.Gym.Region.Region,
+                    Gym = field.Field.Gym.GymName,
+                    Field = field.Field.FieldName,
+                    PaymentStatus = field.PaymentStatus,
+                    ReserveStatus = field.ReserveStatus,
+                    CourseDate = DateOnly.FromDateTime(field.FieldDate ?? DateTime.Now),
+                    CourseStartTime = _context.TtimesDetails.FirstOrDefault(x => x.TimeId == field.FieldReserveStartTime).TimeName,
+                    CourseEndTime = _context.TtimesDetails.FirstOrDefault(x => x.TimeId == field.FieldReserveEndTime).TimeName,
+                    fieldPayment = (int)field.Field.FieldPayment,
+                    floor = field.Field.Floor,
+                };
+                fieldDetailDtos.Add(fieldDetailDto);
+            }
+            foreach (var schedule in schedules)
+            {
+                //keyword不為空字串時，進行關鍵字搜尋
+                if (!schedule.Class.ClassName.Contains(coachPaginationDto.keyword) && !string.IsNullOrEmpty(coachPaginationDto.keyword))
+                    continue;
+                ScheduleDatailDto scheduleDatailDto = new ScheduleDatailDto()
+                {
+                    ClassScheduleId = schedule.ClassScheduleId,
+                    Class = schedule.Class.ClassName,
+                    Coach = schedule.Coach.Name,
+                    Field = schedule.Field.FieldName,
+                    CourseDate = DateOnly.FromDateTime(schedule.CourseDate),
+                    CourseStartTime = schedule.CourseStartTime.TimeName,
+                    CourseEndTime = schedule.CourseEndTime.TimeName,
+                    MaxStudent = schedule.MaxStudent,
+                    ClassStatus = schedule.ClassStatus.ClassStatusDiscribe,
+                    ClassPayment = schedule.ClassPayment,
+                    CoachPayment = schedule.CoachPayment
+                };
+                scheduleDatailDtos.Add(scheduleDatailDto);
+            }
+
+
+            var result = new
+            {
+                coachDetailDto,
+                rateDetailDtos,
+                scheduleDatailDtos,
+                fieldDetailDtos
+            };
+            return Ok(result);
+        }
         // PUT: api/Coach/5
         // 修改教練資料
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
